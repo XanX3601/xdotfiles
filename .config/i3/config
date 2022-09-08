@@ -1,0 +1,93 @@
+# mod
+set $win Mod4
+set $alt Mod1
+
+# setup
+#   font
+exec --no-startup-id xsettingsd &
+#   style
+exec --no-startup-id compton -b
+#   wallpaper
+exec --no-startup-id feh --bg-scale $HOME/.wallpaper.jpg
+
+# font
+font pango: Noto Sans 8
+
+# control
+#   start a terminal
+bindsym $alt+Return exec alacritty
+#   start an application
+bindsym $alt+d exec rofi -show
+#   lock screen
+bindsym $win+l exec i3lock -i $HOME/.wallpaper.jpg
+#   kill current application
+bindsym $alt+Shift+q kill
+#   move focus
+bindsym $alt+h focus left
+bindsym $alt+j focus down
+bindsym $alt+k focus up
+bindsym $alt+l focus right
+#   move window
+bindsym $alt+Shift+h move left
+bindsym $alt+Shit+j move down
+bindsym $alt+Shift+k move up
+bindsym $alt+Shift+l move right
+#   split
+bindsym $alt+Ctrl+v split v
+bindsym $alt+Ctrl+h split h
+#   full screen
+bindsym $alt+f fullscreen toggle
+#   change workspace
+bindsym $alt+1 workspace 1
+bindsym $alt+2 workspace 2
+bindsym $alt+3 workspace 3
+bindsym $alt+4 workspace 4
+bindsym $alt+5 workspace 5
+bindsym $alt+6 workspace 6
+bindsym $alt+7 workspace 7
+bindsym $alt+8 workspace 8
+bindsym $alt+9 workspace 9
+#   move window to workspace
+bindsym $alt+Shift+1 move container to workspace 1
+bindsym $alt+Shift+2 move container to workspace 2
+bindsym $alt+Shift+3 move container to workspace 3
+bindsym $alt+Shift+4 move container to workspace 4
+bindsym $alt+Shift+5 move container to workspace 5
+bindsym $alt+Shift+6 move container to workspace 6
+bindsym $alt+Shift+7 move container to workspace 7
+bindsym $alt+Shift+8 move container to workspace 8
+bindsym $alt+Shift+9 move container to workspace 9
+#   restart i3
+bindsym $alt+Shift+r restart
+#   exit i3
+bindsym $alt+Shift+e exec "i3-nagbar -t warning -m 'Exit?' -b 'Yes' 'i3-msg exit'"
+
+# style
+#   color
+# class                 border  bground text    indicator child_border
+client.focused          #6272A4 #6272A4 #F8F8F2 #6272A4   #6272A4
+client.focused_inactive #44475A #44475A #F8F8F2 #44475A   #44475A
+client.unfocused        #282A36 #282A36 #BFBFBF #282A36   #282A36
+client.urgent           #44475A #FF5555 #F8F8F2 #FF5555   #FF5555
+client.placeholder      #282A36 #282A36 #F8F8F2 #282A36   #282A36
+
+client.background       #F8F8F2
+
+bar {
+  colors {
+    background #282A36
+    statusline #F8F8F2
+    separator  #44475A
+
+    focused_workspace  #44475A #44475A #F8F8F2
+    active_workspace   #282A36 #44475A #F8F8F2
+    inactive_workspace #282A36 #282A36 #BFBFBF
+    urgent_workspace   #FF5555 #FF5555 #F8F8F2
+    binding_mode       #FF5555 #FF5555 #F8F8F2
+  }
+
+  status_command i3status
+}
+#   window rules
+for_window [class=".*"] border pixel 4
+
