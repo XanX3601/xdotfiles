@@ -39,6 +39,27 @@ call plug#begin(stdpath('data') . '/plugged')
     " to enhance todos in code
     " Plug 'nvim-lua/plenary.nvim' " already above
     Plug 'folke/todo-comments.nvim'
+
+    " popup menu
+    " to be able to use popup menu
+    Plug 'kamykn/popup-menu.nvim'
+
+    " vim dadbod
+    " to make sql query through vim
+    Plug 'tpope/vim-dadbod'
+    Plug 'kristijanhusak/vim-dadbod-ui'
+
+    " jupyter ascending
+    " to interact with jupyter notebook
+    Plug 'untitled-ai/jupyter_ascending.vim'
+
+    " vim table mode
+    " to make nice markdown table
+    Plug 'dhruvasagar/vim-table-mode'
+
+    " markdown preview
+    " to have preview of markdown files
+    Plug 'iamcco/markdown-preview.nvim', { 'do': 'cd app && yarn install' }
 call plug#end()
 
 " coq
@@ -69,6 +90,59 @@ lua << EOF
     require("todo-comments").setup{
     }
 EOF
+
+" vim dadbod
+" thanks to https://habamax.github.io/2019/09/02/use-vim-dadbod-to-query-databases.html
+" all the code for vim dadbod comes from there, amazing !
+let g:db_ui_use_nerd_fonts = 1
+
+func! DBExe(...)
+    if !a:0
+        let &operatorfunc = matchstr(expand('<sfile>'), '[^. ]*$')
+        return 'g@'
+    endif
+
+    let sel_save = &selection
+    let &selection = 'inclusive'
+    let reg_save = @@
+
+    if a:1 == 'char'
+        silent exe 'normal! gvy'
+    elseif a:1 == 'line'
+        silent exe "normal! '[V']y"
+    else
+        silent exe 'normal! `[v`]y'
+    endif
+
+    execute 'DB ' . @@
+
+    let &selection = sel_save
+    let @@ = reg_save
+endfunc
+
+let g:dbs = {
+\}
+
+let g:db = ''
+
+func! DBSelected(selected)
+    if a:selected != ""
+        let b:db = g:dbs[a:selected]
+        echo 'DB ' . a:selected . ' is selected'
+    endif
+endfunc
+
+command! DBSelect :call popup_menu#open(
+    \keys(g:dbs),
+    \{db -> DBSelected(db)},
+    \{
+        \'relative': 'editor',
+        \'width': 80,
+        \'height': 20,
+        \'col': (&columns/2) - 40,
+        \'row': (&lines/2) - 10
+    \}
+\)
 
 " General settings *************************************************************
 set encoding=UTF-8 " encoding file to utf8
@@ -162,5 +236,17 @@ nnoremap <leader>o :Vifm<CR>
 " find file
 nnoremap <leader>ff <cmd>Telescope find_files<CR>
 nnoremap <leader>fg <cmd>Telescope live_grep<CR>
-" todo
-autocmd FileType python nnoremap todo a#TODO: 
+" execute sql query
+xnoremap <expr> <Plug>(DBExe)     DBExe()
+nnoremap <expr> <Plug>(DBExe)     DBExe()
+nnoremap <expr> <Plug>(DBExeLine) DBExe() . '_'
+
+xmap <leader>db  <Plug>(DBExe)
+nmap <leader>db  <Plug>(DBExe)
+omap <leader>db  <Plug>(DBExe)
+nmap <leader>dbb <Plug>(DBExeLine)
+" center view horizontally
+nmap <silent>zh zszH
+" jupyter notebook
+nmap <space><space>x <Plug>JupyterExecute
+nmap <space><space>X <Plug>JupyterExecuteAll
