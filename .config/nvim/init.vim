@@ -6,9 +6,17 @@ call plug#begin(stdpath('data') . '/plugged')
     Plug 'ms-jpq/coq.artifacts',  {'branch': 'artifacts'}
     Plug 'ms-jpq/coq.thirdparty', {'branch': '3p'}
 
+    " lsp signature
+    " to remove once coq can do the job
+    Plug 'ray-x/lsp_signature.nvim'
+
     " dracula
     " the color scheme
     Plug 'dracula/vim', { 'as': 'dracula' }
+
+    " tokyo night
+    " the color scheme
+    Plug 'folke/tokyonight.nvim', { 'branch': 'main' }
 
     " nvim lspconfig
     " native lsp config needed to run lang server
@@ -60,16 +68,56 @@ call plug#begin(stdpath('data') . '/plugged')
     " markdown preview
     " to have preview of markdown files
     Plug 'iamcco/markdown-preview.nvim', { 'do': 'cd app && yarn install' }
+
+    " nvim autopairs
+    " to have pair completion
+    Plug 'windwp/nvim-autopairs'
+
+    " indent blank line
+    " to have indent guides
+    Plug 'lukas-reineke/indent-blankline.nvim'
+
+    " vim accent
+    " to write accent easily
+    Plug 'airblade/vim-accent'
+
+    " vim codefmt
+    " to format code
+    Plug 'google/vim-maktaba'
+    Plug 'google/vim-codefmt'
+    Plug 'google/vim-glaive'
+
+    " zen mode
+    " to be zen
+    Plug 'folke/zen-mode.nvim'
+
+    " twilight
+    " to be event more zen
+    Plug 'folke/twilight.nvim'
+
+    " leap
+    " to be a kangooroo
+    Plug 'ggandor/leap.nvim'
+
 call plug#end()
 
 " coq
-let g:coq_settings = {'auto_start': 'shut-up', 'keymap.jump_to_mark': '<C-n>'}
+let g:coq_settings = {'auto_start': 'shut-up', 'keymap.jump_to_mark': '<Cmd-n>'}
 
 lua << EOF
     local lsp = require 'lspconfig'
     local coq = require 'coq'
 
     lsp.pyright.setup(coq.lsp_ensure_capabilities())
+EOF
+
+" lsp signature
+lua << EOF
+    local lsp_signature = require "lsp_signature"
+
+    cfg = {}
+
+    lsp_signature.setup(cfg)
 EOF
 
 " tree sitter
@@ -79,7 +127,7 @@ lua << EOF
             enable = true
         },
         indent = {
-            enable = true,
+            enable = false,
             disable = {"python"}
         }
     }
@@ -121,9 +169,13 @@ func! DBExe(...)
 endfunc
 
 let g:dbs = {
+    \'preprod': 'postgresql://wakapi:I1ReKDRnVh8@preprod-db.dhatim.it/wakapi',
+    \'integration': 'postgresql://wakapi:wakapi@intg.dhatim.it/ie_intg',
+    \'prod_shard0': 'postgresql://tpetiteau:BC5e8B8tbxb96u@proxyprod.dhatim.it:5611/wakapi_depl1',
+    \'prod_shard1': 'postgresql://tpetiteau:BC5e8B8tbxb96u@proxyprod.dhatim.it:5618/wakapi_depl1',
 \}
 
-let g:db = ''
+let g:db = g:dbs['preprod']
 
 func! DBSelected(selected)
     if a:selected != ""
@@ -143,6 +195,35 @@ command! DBSelect :call popup_menu#open(
         \'row': (&lines/2) - 10
     \}
 \)
+
+" nvim autopairs
+lua << EOF
+require('nvim-autopairs').setup{}
+EOF
+
+" indent blank line
+lua << EOF
+vim.opt.termguicolors = true
+
+vim.opt.list = true
+vim.opt.listchars:append "space:⋅"
+
+require("indent_blankline").setup {
+    space_char_blankline = " ",
+}
+EOF
+
+" zen mode
+lua << EOF
+require("zen-mode").setup {
+}
+EOF
+
+" twilight
+lua << EOF
+require("twilight").setup {
+}
+EOF
 
 " General settings *************************************************************
 set encoding=UTF-8 " encoding file to utf8
@@ -182,11 +263,13 @@ set updatetime=300 " more frequent update time (recommended by coc)
 set shortmess+=c " remove some message to avoid spamming by coc
 set signcolumn=number " display sign column on the number one
 set noswapfile " remove swap files
+set foldmethod=indent " set the foldmethod as indent
+set foldlevel=99 " no fold by default
 
 " Colorscheme ******************************************************************
 set background=dark
 set termguicolors
-colorscheme dracula
+colorscheme tokyonight
 " hi Normal guibg=#1D1F26 ctermbg=black
 hi! Normal ctermbg=NONE guibg=NONE 
 hi! NonText ctermbg=NONE guibg=NONE guifg=NONE ctermfg=NONE
@@ -250,3 +333,17 @@ nmap <silent>zh zszH
 " jupyter notebook
 nmap <space><space>x <Plug>JupyterExecute
 nmap <space><space>X <Plug>JupyterExecuteAll
+" vim accent
+inoremap aa a<esc><Plug>(accent)a
+inoremap ee e<esc><Plug>(accent)a
+inoremap uu u<esc><Plug>(accent)a
+inoremap ii i<esc><Plug>(accent)a
+inoremap <leader>a <esc><Plug>(accent)a
+inoremap <leader>e <esc><Plug>(accent)a
+inoremap <leader>u <esc><Plug>(accent)a
+inoremap <leader>i <esc><Plug>(accent)a
+" zen mode
+nnoremap <leader>z :ZenMode<CR>
+" leap
+nnoremap <leader>k <Plug>(leap-forward-to)
+nnoremap <leader>K <Plug>(leap-backward-to)
