@@ -1,0 +1,5 @@
+require('settings')
+require('plugins')
+require('plugins_loading')
+require('colorscheme')
+require('keybindings')
