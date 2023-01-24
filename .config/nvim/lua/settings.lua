@@ -1,7 +1,7 @@
 vim.o.autoindent = true                    -- follow indentation from previous line
 vim.o.autoread = true                      -- read files that have changed outside vim
 vim.o.background = "dark"                  -- use dark background
-vim.o.colorcolumn = 81                     -- color column 81
+vim.o.colorcolumn = "81"                   -- color column 81
 vim.o.confirm = true                       -- ask wether to save files or not upon exit
 vim.o.copyindent = true                    -- make autoindent copy the existing indent
 vim.o.dictionary = "/usr/share/dict/words" -- add words to help autocompletion
@@ -14,7 +14,12 @@ vim.o.expandtab = true                     -- to use space instead of tabs
 vim.o.fileencodings = "utf-8"              -- only use utf8 when discovering a file encoding
 vim.o.foldlevel = 99                       -- to not have anything folded by default
 vim.o.foldmethod = "indent"                -- fold line using indentation level
-vim.o.formatoptions = ""
+vim.cmd(
+    "autocmd BufEnter * set formatoptions-=cro"
+)
+vim.cmd(
+    "autocmd BufEnter * setlocal formatoptions-=cro"
+)
 vim.o.ignorecase = true                    -- search is not case sensitive
 vim.o.number = true                        -- display number of line on the left of the window
 vim.o.relativenumber = true                -- display relative line number

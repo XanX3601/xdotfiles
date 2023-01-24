@@ -56,6 +56,12 @@ return require('packer').startup(function(use)
     use 'google/vim-glaive'
     -- python indent
     use 'Vimjas/vim-python-pep8-indent'
+    -- doge
+    use {'kkoomen/vim-doge', run = ':call doge#install()'}
+    -- nvim dap
+    use 'mfussenegger/nvim-dap'
+    -- nvim dap ui
+    use 'rcarriga/nvim-dap-ui'
 
     if packer_bootstrap then
         require('packer').sync()

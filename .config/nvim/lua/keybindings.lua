@@ -5,6 +5,17 @@ vim.keymap.set('n', '<leader>h', ':bp<cr>', {noremap=true, silent=true})
 vim.keymap.set('n', '<leader>l', ':bn<cr>', {noremap=true, silent=true})
 vim.keymap.set('n', '<leader>x', ':BD<cr>', {noremap=true, silent=true})
 
+-- debugger
+vim.keymap.set('n', '<F5>', function() require"dap".continue() end)
+vim.keymap.set('n', '<F6>', function() require"dap".step_over() end)
+vim.keymap.set('n', '<F7>', function() require"dap".step_into() end)
+vim.keymap.set('n', '<F8>', function() require"dap".step_out() end)
+vim.keymap.set('n', '<F8>', function() require"dap".step_out() end)
+vim.keymap.set('n', '<F9>', function() require"dap".terminate() end)
+vim.keymap.set('n', '<leader>b', function() require"dap".toggle_breakpoint() end)
+vim.keymap.set('n', '<leader>B', function() require"dap".set_breakpoint(vim.fn.input("Breakpoint condition: ")) end)
+vim.keymap.set('n', '<leader>e', function() require"dapui".eval() end)
+
 -- diagnostic
 vim.keymap.set('n', '<leader>ds', vim.diagnostic.open_float, {noremap=true, silent=true})
 vim.keymap.set('n', '<leader>dn', vim.diagnostic.goto_next,  {noremap=true, silent=true})
@@ -12,6 +23,9 @@ vim.keymap.set('n', '<leader>dp', vim.diagnostic.goto_prev,  {noremap=true, sile
 
 -- documentation
 vim.keymap.set('n', '<leader>D', vim.lsp.buf.hover, {noremap=true, silent=true})
+
+-- doge
+vim.keymap.set('n', '<leader>doc', ':DogeGenerate<cr>')
 
 -- file
 vim.keymap.set('n', '<leader>o', ':Vifm<cr>', {noremap=true, silent=true})
