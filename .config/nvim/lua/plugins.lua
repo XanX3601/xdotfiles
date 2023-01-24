@@ -62,6 +62,20 @@ return require('packer').startup(function(use)
     use 'mfussenegger/nvim-dap'
     -- nvim dap ui
     use 'rcarriga/nvim-dap-ui'
+    -- dadbod
+    use 'tpope/vim-dadbod'
+    use 'kristijanhusak/vim-dadbod-ui'
+    -- vim accent
+    use 'XanX3601/vim-accent'
+    -- markdown preview
+    use({
+        "iamcco/markdown-preview.nvim",
+        run = function() vim.fn["mkdp#util#install"]() end,
+    })
+    -- vim table mode
+    use 'dhruvasagar/vim-table-mode'
+    -- indent blank line
+    use "lukas-reineke/indent-blankline.nvim"
 
     if packer_bootstrap then
         require('packer').sync()
