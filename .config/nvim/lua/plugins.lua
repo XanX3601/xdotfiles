@@ -68,9 +68,15 @@ return require('packer').startup(function(use)
     -- vim accent
     use 'XanX3601/vim-accent'
     -- markdown preview
+    -- pets
     use({
         "iamcco/markdown-preview.nvim",
         run = function() vim.fn["mkdp#util#install"]() end,
+        "giusgad/pets.nvim",
+        requires = {
+            "giusgad/hologram.nvim",
+            "MunifTanjim/nui.nvim",
+        }
     })
     -- vim table mode
     use 'dhruvasagar/vim-table-mode'
