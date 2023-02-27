@@ -76,6 +76,12 @@ return require('packer').startup(function(use)
     use 'dhruvasagar/vim-table-mode'
     -- indent blank line
     use "lukas-reineke/indent-blankline.nvim"
+    -- leap
+    use 'ggandor/leap.nvim'
+    -- no neck pain
+    use 'shortcuts/no-neck-pain.nvim'
+    -- catppucin
+    use { "catppuccin/nvim", as = "catppuccin" }
 
     if packer_bootstrap then
         require('packer').sync()

@@ -5,6 +5,10 @@ vim.keymap.set('n', '<leader>h', ':bp<cr>', {noremap=true, silent=true})
 vim.keymap.set('n', '<leader>l', ':bn<cr>', {noremap=true, silent=true})
 vim.keymap.set('n', '<leader>x', ':BD<cr>', {noremap=true, silent=true})
 
+-- copy / past
+vim.keymap.set('n', '<leader>y', '"*y', {noremap=true, silent=true})
+vim.keymap.set('n', '<leader>p', '"*p', {noremap=true, silent=true})
+
 -- debugger
 vim.keymap.set('n', '<F5>', function() require"dap".continue() end)
 vim.keymap.set('n', '<F6>', function() require"dap".step_over() end)
