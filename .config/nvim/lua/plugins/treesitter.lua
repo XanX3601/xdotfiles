@@ -1,6 +1,6 @@
 require'nvim-treesitter.configs'.setup {
     auto_install = false,
-    hightlight = {
+    highlight = {
         enable = true
     },
     indent = {

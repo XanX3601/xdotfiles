@@ -68,10 +68,12 @@ return require('packer').startup(function(use)
     -- vim accent
     use 'XanX3601/vim-accent'
     -- markdown preview
-    -- pets
     use({
         "iamcco/markdown-preview.nvim",
-        run = function() vim.fn["mkdp#util#install"]() end,
+        run = function() vim.fn["mkdp#util#install"]() end
+    })
+    -- pets
+    use({
         "giusgad/pets.nvim",
         requires = {
             "giusgad/hologram.nvim",
@@ -88,6 +90,17 @@ return require('packer').startup(function(use)
     use 'shortcuts/no-neck-pain.nvim'
     -- catppucin
     use { "catppuccin/nvim", as = "catppuccin" }
+    -- navbuddy
+    use {
+        "SmiteshP/nvim-navbuddy",
+        requires = {
+            "neovim/nvim-lspconfig",
+            "SmiteshP/nvim-navic",
+            "MunifTanjim/nui.nvim",
+            "numToStr/Comment.nvim",        -- Optional
+            "nvim-telescope/telescope.nvim" -- Optional
+    }
+}
 
     if packer_bootstrap then
         require('packer').sync()
