@@ -26,6 +26,45 @@ dap.configurations.cpp = {
     }
 }
 
+dap.adapters.python = {
+    type = "executable";
+    command = "/home/xan/.virtualenvs/debugpy/bin/python";
+    args = { "-m", "debugpy.adapter" };
+}
+
+dap.configurations.python = {
+    {
+        name="Launch";
+        type="python";
+        request="launch";
+
+        program = function()
+            return vim.fn.input("File from cwd: ", vim.fn.getcwd() .. "/", "file")
+        end;
+        args = function()
+            local args = vim.fn.input("args: ")
+            local args_list = {}
+            for arg in string.gmatch(args, "([^%s])") do
+                table.insert(args_list, arg)
+            end
+            return args_list
+        end;
+        pythonPath = function()
+          -- debugpy supports launching an application with a different interpreter then the one used to launch debugpy itself.
+          -- The code below looks for a `venv` or `.venv` folder in the current directly and uses the python within.
+          -- You could adapt this - to for example use the `VIRTUAL_ENV` environment variable.
+          local cwd = vim.fn.getcwd()
+          if vim.fn.executable(cwd .. '/venv/bin/python') == 1 then
+            return cwd .. '/venv/bin/python'
+          elseif vim.fn.executable(cwd .. '/.venv/bin/python') == 1 then
+            return cwd .. '/.venv/bin/python'
+          else
+            return '/usr/bin/python'
+          end
+        end;
+    }
+}
+
 local dapui = require("dapui")
 dapui.setup({
   icons = { expanded = "", collapsed = "", current_frame = "" },

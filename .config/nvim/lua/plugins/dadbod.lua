@@ -28,7 +28,7 @@ endfunc
 let g:dbs = {
 \}
 
-let g:db = g:dbs['preprod']
+let g:db = ""
 
 func! DBSelected(selected)
     if a:selected != ""

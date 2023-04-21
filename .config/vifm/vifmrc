@@ -519,6 +519,9 @@ nnoremap <a-o> :sync %c<cr>
 " Swap panes
 nnoremap <c-u> <c-w>x
 
+nnoremap nf :touch<space>
+nnoremap nd :mkdir<space>
+
 " ------------------------------------------------------------------------------
 
 " Various customization examples
