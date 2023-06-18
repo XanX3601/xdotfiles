@@ -17,8 +17,31 @@ end
 local servers = {'clangd', 'pyright'}
 for _, lsp in ipairs(servers) do
     require('lspconfig')[lsp].setup(require('coq').lsp_ensure_capabilities({
-        on_attach=on_attach
     }))
 end
 
 -- start lsp signature
+
+local capabilities = vim.lsp.protocol.make_client_capabilities()
+capabilities.textDocument.foldingRange = {
+    dynamicRegistration = false,
+    lineFoldingOnly = true
+}
+local language_servers = require("lspconfig").util.available_servers() -- or list servers manually like {'gopls', 'clangd'}
+for _, ls in ipairs(language_servers) do
+    require('lspconfig')[ls].setup({
+        capabilities = capabilities,
+        on_attach=on_attach
+        -- you can add other fields for setting up lsp server in this table
+    })
+end
+require('ufo').setup()
+
+vim.api.nvim_create_autocmd('BufRead', {
+   callback = function()
+      vim.api.nvim_create_autocmd('BufWinEnter', {
+         once = true,
+         command = 'normal! zx'
+      })
+   end
+})
