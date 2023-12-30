@@ -34,6 +34,13 @@ vim.keymap.set('n', '<leader>doc', ':DogeGenerate<cr>')
 -- file
 vim.keymap.set('n', '<leader>o', ':Vifm<cr>', {noremap=true, silent=true})
 
+-- fold
+vim.keymap.set('n', 'zR', require('ufo').openAllFolds)
+vim.keymap.set('n', 'zM', require('ufo').closeAllFolds)
+
+-- navigation
+vim.keymap.set('n', '<leader>nb', ':Navbuddy<CR>', {noremap=true, silent=true})
+
 -- goto
 vim.keymap.set('n', '<leader>gD', vim.lsp.buf.declaration,    {noremap=true, silent=true})
 vim.keymap.set('n', '<leader>gd', vim.lsp.buf.definition,     {noremap=true, silent=true})

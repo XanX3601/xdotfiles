@@ -99,8 +99,14 @@ return require('packer').startup(function(use)
             "MunifTanjim/nui.nvim",
             "numToStr/Comment.nvim",        -- Optional
             "nvim-telescope/telescope.nvim" -- Optional
+        }
     }
-}
+    -- rainbow parenthesis
+    use 'HiPhish/nvim-ts-rainbow2'
+    -- nvim-ufo
+    use {'kevinhwang91/nvim-ufo', requires = 'kevinhwang91/promise-async'}
+    -- git blame
+    use 'f-person/git-blame.nvim'
 
     if packer_bootstrap then
         require('packer').sync()
