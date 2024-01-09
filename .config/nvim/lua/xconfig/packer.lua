@@ -132,7 +132,10 @@ return packer.startup(
             },
             setup = function()
                 vim.g.coq_settings = {
-                    auto_start = true
+                    auto_start = "shut-up",
+                    keymap = {
+                        jump_to_mark = "<c-m>"
+                    }
                 }
             end
         }
@@ -186,6 +189,24 @@ return packer.startup(
             end
         }
 
+        -- diffview
+        -- easier merge management
+        use {
+            "sindrets/diffview.nvim",
+            config = function()
+                require("diffview").setup({
+                    keymaps = {
+                        disable_defaults = false
+                    },
+                    view = {
+                        merge_tool = {
+                            layout = "diff3_mixed"
+                        }
+                    }
+                })
+            end
+        }
+
         -- illuminate
         -- highligh current word
         use {
@@ -199,6 +220,21 @@ return packer.startup(
             config = function()
                 require("ibl").setup({})
             end
+        }
+
+        use {
+            'mikesmithgh/kitty-scrollback.nvim',
+            opt = true,
+            cmd = {
+                "KittyScrollbackGenerateKittens",
+                "KittyScrollbackCheckHealth"
+            },
+            event = {
+                "User KittyScrollbackLaunch"
+            },
+            config = function()
+                require("kitty-scrollback").setup({})
+            end,
         }
 
         -- leap
@@ -225,19 +261,21 @@ return packer.startup(
             config = function()
                 local lspconfig = require("lspconfig")
                 local coq = require("coq")
-                
-                lspconfig.jedi_language_server.setup(
+
+                lspconfig.pyright.setup(
                     coq.lsp_ensure_capabilities({
-                        init_options = {
-                            diagnostics = {
-                                enable = false
-                            }
-                        },
                         on_attach = function(client, bufnr)
                             require("lsp_signature").on_attach({}, bufnr)
                         end
                     })
                 )
+
+                vim.keymap.set("n", "<leader>gD", vim.lsp.buf.declaration)
+                vim.keymap.set("n", "<leader>gd", vim.lsp.buf.definition)
+                vim.keymap.set("n", "<leader>gi", vim.lsp.buf.implementation)
+                vim.keymap.set("n", "<leader>K", vim.lsp.buf.hover)
+                vim.keymap.set("n", "[d", vim.diagnostic.goto_prev)
+                vim.keymap.set("n", "]d", vim.diagnostic.goto_next)
             end
         }
 
@@ -312,6 +350,8 @@ return packer.startup(
                         biend = -0.2
                     }
                 })
+
+                vim.keymap.set("n", "<leader>nn", ":NoNeckPain<cr>")
             end
         }
 
@@ -415,6 +455,9 @@ return packer.startup(
                     highlight = {
                         enable = true
                     },
+                    indent = {
+                        enable = true
+                    }
                 })
             end,
         }
