@@ -107,8 +107,6 @@ return packer.startup(
                         enabled = true
                     }
                 })
-
-                vim.cmd [[colorscheme catppuccin]]
             end
         }
 
@@ -165,7 +163,8 @@ return packer.startup(
         use {
             "rcarriga/nvim-dap-ui",
             after = {
-                "nvim-dap"
+                "nvim-dap",
+                "nvim-nio"
             },
             config = function()
                 require("dapui").setup({})
@@ -207,10 +206,48 @@ return packer.startup(
             end
         }
 
-        -- illuminate
-        -- highligh current word
+        -- evergarden
+        -- colorscheme to test
         use {
-            "RRethy/vim-illuminate"
+            "comfysage/evergarden",
+            config = function()
+                require("evergarden").setup({
+                    transparent_background = true,
+                    constrast_dark = "hard"
+                })
+            end
+        }
+
+        -- git blame
+        -- git blame in neovim
+        use {
+            "f-person/git-blame.nvim",
+            config = function()
+                require("gitblame").setup({
+                    enabled = false
+                })
+            end
+        }
+
+        -- image
+        -- image support in neovim using kitty
+        -- used by molten
+        use {
+            "3rd/image.nvim",
+            config = function()
+                require("image").setup({
+                    max_width = 720,
+                    max_height = 480,
+                    max_height_window_percentage = math.huge,
+                    max_width_window_percentage = math.huge,
+                    window_overlap_clear_enabled = true,
+                    window_overlap_clear_ft_ignore = {
+                        "cmp_menu",
+                        "cmp_docs",
+                        ""
+                    }
+                })
+            end
         }
 
         -- indent blankline
@@ -222,6 +259,14 @@ return packer.startup(
             end
         }
 
+        -- illuminate
+        -- highligh current word
+        use {
+            "RRethy/vim-illuminate"
+        }
+
+        -- kitty scrollback
+        -- use to display kitty buffer in neovim
         use {
             'mikesmithgh/kitty-scrollback.nvim',
             opt = true,
@@ -235,6 +280,12 @@ return packer.startup(
             config = function()
                 require("kitty-scrollback").setup({})
             end,
+        }
+
+        -- lackluster
+        -- grey colorscheme I want to try
+        use {
+            "slugbyte/lackluster.nvim"
         }
 
         -- leap
@@ -262,9 +313,21 @@ return packer.startup(
                 local lspconfig = require("lspconfig")
                 local coq = require("coq")
 
+                lspconfig.clangd.setup(
+                    coq.lsp_ensure_capabilities({
+                        require("lsp_signature").on_attach({}, bufnr)
+                    })
+                )
                 lspconfig.pyright.setup(
                     coq.lsp_ensure_capabilities({
                         on_attach = function(client, bufnr)
+                            require("lsp_signature").on_attach({}, bufnr)
+                        end
+                    })
+                )
+                lspconfig.ruff_lsp.setup(
+                    coq.lsp_ensure_capabilities({
+                        on_atach = function(client, bufnr)
                             require("lsp_signature").on_attach({}, bufnr)
                         end
                     })
@@ -298,6 +361,8 @@ return packer.startup(
                         theme = "catppuccin"
                     }
                 })
+
+                vim.cmd [[colorscheme catppuccin-frappe]]
             end
         }
 
@@ -333,6 +398,34 @@ return packer.startup(
             end
         }
 
+        -- molten
+        -- run python code in neovim
+        use {
+            "benlubas/molten-nvim",
+            after = {
+                "image.nvim"
+            },
+            run = ":UpdateRemotePlugins",
+            config = function()
+                vim.g.molten_image_provider = "image.nvim"
+                vim.g.molten_virt_text_output = true
+
+                vim.keymap.set("n", "<leader>mi", ":MoltenInit<CR>")
+                vim.keymap.set("n", "<leader>me", ":MoltenEvaluateOperator<CR>")
+                vim.keymap.set("n", "<leader>ml", ":MoltenEvaluateLine<CR>")
+                vim.keymap.set("v", "<leader>mv", ":<c-u>MoltenEvaluateVisual<CR>")
+                vim.keymap.set("n", "<leader>mr", ":MoltenReevaluateCell<CR>")
+                vim.keymap.set("n", "<leader>mo", ":noautocmd MoltenEnterOutput<CR>")
+            end
+        }
+
+        -- nio
+        -- library for asynchronous i/o
+        -- used by dap ui
+        use {
+            "nvim-neotest/nvim-nio"
+        }
+
         -- no neck pain
         -- avoid neck pain
         use {
@@ -347,29 +440,18 @@ return packer.startup(
                         right = {
                             enabled = false
                         },
-                        biend = -0.2
+                        biend = -0.2,
+                        scratchPad = {
+                            enabled = true,
+                            location = "~/Documents"
+                        },
+                        bo = {
+                            filetype = "md"
+                        }
                     }
                 })
 
                 vim.keymap.set("n", "<leader>nn", ":NoNeckPain<cr>")
-            end
-        }
-
-        -- none ls
-        -- linting engine
-        use {
-            "nvimtools/none-ls.nvim",
-            after = {
-                "plenary.nvim"
-            },
-            config = function()
-                local null_ls = require("null-ls")
-
-                null_ls.setup({
-                    sources = {
-                        null_ls.builtins.diagnostics.ruff
-                    }
-                })
             end
         }
 
@@ -391,6 +473,15 @@ return packer.startup(
         -- used by none ls, todo comments, telescope
         use {
             "nvim-lua/plenary.nvim"
+        }
+
+        -- precognition
+        -- hightlight movement hint to learn move aroung
+        use {
+            "tris203/precognition.nvim",
+            config = function()
+                vim.keymap.set("n", "<leader>pp", ":lua require('precognition').toggle()<CR>")
+            end
         }
 
         -- promise async
@@ -478,6 +569,11 @@ return packer.startup(
                         return {"treesitter", "indent"}
                     end
                 })
+
+                vim.keymap.set('n', 'zR', require('ufo').openAllFolds)
+                vim.keymap.set('n', 'zM', require('ufo').closeAllFolds)
+                vim.keymap.set('n', 'zr', require('ufo').openFoldsExceptKinds)
+                vim.keymap.set('n', 'zm', require('ufo').closeFoldsWith)
             end
         }
 
