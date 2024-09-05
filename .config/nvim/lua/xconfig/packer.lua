@@ -218,6 +218,20 @@ return packer.startup(
             end
         }
 
+        -- flow
+        -- colorscheme to test on transparent
+        use {
+            "0xstepit/flow.nvim",
+            config = function()
+                require("flow").setup({
+                    transparent = true,
+                    fluo_color = "pink",
+                    mode = "normal",
+                    aggressive_spell = false,
+                })
+            end
+        }
+
         -- git blame
         -- git blame in neovim
         use {
@@ -362,7 +376,7 @@ return packer.startup(
                     }
                 })
 
-                vim.cmd [[colorscheme catppuccin-frappe]]
+                vim.cmd [[colorscheme flow]]
             end
         }
 
