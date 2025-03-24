@@ -332,14 +332,14 @@ return packer.startup(
                         require("lsp_signature").on_attach({}, bufnr)
                     })
                 )
-                lspconfig.pyright.setup(
+                lspconfig.jedi_language_server.setup(
                     coq.lsp_ensure_capabilities({
                         on_attach = function(client, bufnr)
                             require("lsp_signature").on_attach({}, bufnr)
                         end
                     })
                 )
-                lspconfig.ruff_lsp.setup(
+                lspconfig.ruff.setup(
                     coq.lsp_ensure_capabilities({
                         on_atach = function(client, bufnr)
                             require("lsp_signature").on_attach({}, bufnr)
@@ -376,7 +376,7 @@ return packer.startup(
                     }
                 })
 
-                vim.cmd [[colorscheme flow]]
+                vim.cmd [[colorscheme catppuccin]]
             end
         }
 

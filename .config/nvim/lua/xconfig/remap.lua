@@ -12,6 +12,10 @@ vim.keymap.set('v', '<leader>p', '"+p', {noremap=true, silent=true})
 -- escape
 vim.keymap.set('i', 'kj', '<esc>', {desc='easy escape key'})
 
+-- quickfix
+vim.keymap.set('n', '<leader>j', ':cnext<cr>zz', {noremap=true, silent=true})
+vim.keymap.set('n', '<leader>k', ':cprev<cr>zz', {noremap=true, silent=true})
+
 -- resize
 vim.keymap.set('n', '<up>',    ':resize +2<cr>',          {noremap=true, silent=true})
 vim.keymap.set('n', '<down>',  ':resize -2<cr>',          {noremap=true, silent=true})
