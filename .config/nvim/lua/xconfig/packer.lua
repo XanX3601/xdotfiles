@@ -110,6 +110,39 @@ return packer.startup(
             end
         }
 
+        -- codecompanion
+        -- llm integration
+        use {
+            "olimorris/codecompanion.nvim",
+            after = {
+                "plenary.nvim",
+                "nvim-treesitter"
+            },
+            config = function()
+                require("codecompanion").setup({
+                    adapters = {
+                        ollama = function()
+                            return require("codecompanion.adapters").extend("ollama", {
+                                schema = {
+                                    model = {
+                                        default = "deepseek-r1:1.5b",
+                                    },
+                                },
+                            })
+                        end,
+                    },
+                    strategies = {
+                        chat = {
+                            adapter = "ollama"
+                        },
+                        inline = {
+                            adapter = "ollama"
+                        }
+                    }
+                })
+            end
+        }
+
         -- colorizer
         -- show color for color string
         use {
@@ -320,7 +353,6 @@ return packer.startup(
             "neovim/nvim-lspconfig",
             after = {
                 "coq_nvim",
-                "lsp_signature.nvim",
                 "mason-lspconfig.nvim"
             },
             config = function()
@@ -329,21 +361,14 @@ return packer.startup(
 
                 lspconfig.clangd.setup(
                     coq.lsp_ensure_capabilities({
-                        require("lsp_signature").on_attach({}, bufnr)
                     })
                 )
-                lspconfig.jedi_language_server.setup(
+                lspconfig.pylsp.setup(
                     coq.lsp_ensure_capabilities({
-                        on_attach = function(client, bufnr)
-                            require("lsp_signature").on_attach({}, bufnr)
-                        end
                     })
                 )
                 lspconfig.ruff.setup(
                     coq.lsp_ensure_capabilities({
-                        on_atach = function(client, bufnr)
-                            require("lsp_signature").on_attach({}, bufnr)
-                        end
                     })
                 )
 
@@ -354,12 +379,6 @@ return packer.startup(
                 vim.keymap.set("n", "[d", vim.diagnostic.goto_prev)
                 vim.keymap.set("n", "]d", vim.diagnostic.goto_next)
             end
-        }
-
-        -- lsp signature
-        -- function signature help with lsp
-        use {
-            "ray-x/lsp_signature.nvim"
         }
 
         -- lualine
@@ -484,7 +503,7 @@ return packer.startup(
 
         -- plenary
         -- library used by plugins
-        -- used by none ls, todo comments, telescope
+        -- used by codecompanion, none ls, todo comments, telescope
         use {
             "nvim-lua/plenary.nvim"
         }
