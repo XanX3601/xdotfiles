@@ -110,39 +110,6 @@ return packer.startup(
             end
         }
 
-        -- codecompanion
-        -- llm integration
-        use {
-            "olimorris/codecompanion.nvim",
-            after = {
-                "plenary.nvim",
-                "nvim-treesitter"
-            },
-            config = function()
-                require("codecompanion").setup({
-                    adapters = {
-                        ollama = function()
-                            return require("codecompanion.adapters").extend("ollama", {
-                                schema = {
-                                    model = {
-                                        default = "deepseek-r1:1.5b",
-                                    },
-                                },
-                            })
-                        end,
-                    },
-                    strategies = {
-                        chat = {
-                            adapter = "ollama"
-                        },
-                        inline = {
-                            adapter = "ollama"
-                        }
-                    }
-                })
-            end
-        }
-
         -- colorizer
         -- show color for color string
         use {
@@ -152,43 +119,22 @@ return packer.startup(
             end
         }
 
-        -- coq
-        -- autocompletion engine
-        use {
-            "ms-jpq/coq_nvim",
-            branch = "coq",
-            after = {
-                "coq.artifacts",
-                "coq.thirdparty"
-            },
-            setup = function()
-                vim.g.coq_settings = {
-                    auto_start = "shut-up",
-                    keymap = {
-                        jump_to_mark = "<c-m>"
-                    }
-                }
-            end
-        }
-
-        -- coq artifacts
-        -- ressources used by coq
-        use {
-            "ms-jpq/coq.artifacts",
-            branch = "artifacts"
-        }
-
-        -- coq thirparty
-        -- thirparty tools used by coq
-        use {
-            "ms-jpq/coq.thirdparty",
-            branch = "3p"
-        }
-
         -- dap
         -- debugger protocol
         use {
-            "mfussenegger/nvim-dap"
+            "mfussenegger/nvim-dap",
+        }
+
+        -- dap python
+        -- python config for dap
+        use {
+            "mfussenegger/nvim-dap-python",
+            after = {
+                "nvim-dap"
+            },
+            config = function()
+                require("dap-python").setup("/home/azureuser/Repositories/invoice-entry.tpetiteau/venv/bin/python")
+            end
         }
 
         -- dap ui
@@ -197,10 +143,24 @@ return packer.startup(
             "rcarriga/nvim-dap-ui",
             after = {
                 "nvim-dap",
+                "nvim-dap-python",
                 "nvim-nio"
             },
             config = function()
                 require("dapui").setup({})
+
+                local opts = { noremap=true, silent=true }
+
+                vim.api.nvim_set_keymap('n', '<F5>', ':lua require"dap".continue()<CR>', opts)
+                vim.api.nvim_set_keymap('n', '<F6>', ':lua require"dap".step_over()<CR>', opts)
+                vim.api.nvim_set_keymap('n', '<F7>', ':lua require"dap".step_into()<CR>', opts)
+                vim.api.nvim_set_keymap('n', '<F8>', ':lua require"dap".step_out()<CR>', opts)
+                vim.api.nvim_set_keymap('n', '<Leader>b', ':lua require"dap".toggle_breakpoint()<CR>', opts)
+                vim.api.nvim_set_keymap('n', '<Leader>B', ':lua require"dap".set_breakpoint(vim.fn.input("Breakpoint condition: "))<CR>', opts)
+                vim.api.nvim_set_keymap('n', '<Leader>lp', ':lua require"dap".set_breakpoint(nil, nil, vim.fn.input("Log point message: "))<CR>', opts)
+                vim.api.nvim_set_keymap('n', '<Leader>dr', ':lua require"dap".repl.open()<CR>', opts)
+                vim.api.nvim_set_keymap('n', '<Leader>dl', ':lua require"dap".run_last()<CR>', opts)
+                vim.api.nvim_set_keymap('n', '<Leader>du', ':lua require"dapui".toggle()<CR>', opts)
             end
         }
 
@@ -265,6 +225,18 @@ return packer.startup(
             end
         }
 
+        -- friendly snippets
+        -- snippets collection
+        use {
+            "rafamadriz/friendly-snippets",
+            after = {
+                "LuaSnip",
+            },
+            config = function()
+                require("luasnip.loaders.from_vscode").lazy_load()
+            end
+        }
+
         -- git blame
         -- git blame in neovim
         use {
@@ -272,27 +244,6 @@ return packer.startup(
             config = function()
                 require("gitblame").setup({
                     enabled = false
-                })
-            end
-        }
-
-        -- image
-        -- image support in neovim using kitty
-        -- used by molten
-        use {
-            "3rd/image.nvim",
-            config = function()
-                require("image").setup({
-                    max_width = 720,
-                    max_height = 480,
-                    max_height_window_percentage = math.huge,
-                    max_width_window_percentage = math.huge,
-                    window_overlap_clear_enabled = true,
-                    window_overlap_clear_ft_ignore = {
-                        "cmp_menu",
-                        "cmp_docs",
-                        ""
-                    }
                 })
             end
         }
@@ -352,32 +303,38 @@ return packer.startup(
         use {
             "neovim/nvim-lspconfig",
             after = {
-                "coq_nvim",
                 "mason-lspconfig.nvim"
             },
             config = function()
                 local lspconfig = require("lspconfig")
-                local coq = require("coq")
+                
+                capabilities = require('cmp_nvim_lsp').default_capabilities()
 
-                lspconfig.clangd.setup(
-                    coq.lsp_ensure_capabilities({
-                    })
-                )
-                lspconfig.pylsp.setup(
-                    coq.lsp_ensure_capabilities({
-                    })
-                )
-                lspconfig.ruff.setup(
-                    coq.lsp_ensure_capabilities({
-                    })
-                )
+                lspconfig.pyright.setup({
+                    capabilities = capabilities,
+                    settings = {
+                        python = {
+                            analysis = {
+                                autoSearchPaths = true,
+                                typeCheckingMode = "basic",
+                                diagnosticMode = "openFilesOnly",
+                                useLibraryCodeForTypes = true,
+                            }
+                        }
+                    }
+                })
+                lspconfig.ruff.setup({
+                    capabilities = capabilities,
+                })
 
-                vim.keymap.set("n", "<leader>gD", vim.lsp.buf.declaration)
-                vim.keymap.set("n", "<leader>gd", vim.lsp.buf.definition)
-                vim.keymap.set("n", "<leader>gi", vim.lsp.buf.implementation)
-                vim.keymap.set("n", "<leader>K", vim.lsp.buf.hover)
-                vim.keymap.set("n", "[d", vim.diagnostic.goto_prev)
-                vim.keymap.set("n", "]d", vim.diagnostic.goto_next)
+                local opts = {noremap=true, silent=true}
+                vim.keymap.set("n", "<leader>gD", vim.lsp.buf.declaration, opts)
+                vim.keymap.set("n", "<leader>gd", vim.lsp.buf.definition, opts)
+                vim.keymap.set("n", "<leader>gi", vim.lsp.buf.implementation, opts)
+                vim.keymap.set("n", "<leader>K", vim.lsp.buf.hover, opts)
+                vim.keymap.set("n", "[d", vim.diagnostic.goto_prev, opts)
+                vim.keymap.set("n", "]d", vim.diagnostic.goto_next, opts)
+                vim.keymap.set("n", '<leader>ca', vim.lsp.buf.code_action, opts)
             end
         }
 
@@ -396,6 +353,18 @@ return packer.startup(
                 })
 
                 vim.cmd [[colorscheme catppuccin]]
+            end
+        }
+
+        -- lua snip
+        -- snippet engine
+        use {
+            "L3MON4D3/LuaSnip",
+            config = function()
+                require("luasnip").setup({
+                    history = true,
+                    updateevents = "TextChanged,TextChangedI",
+                })
             end
         }
 
@@ -435,12 +404,9 @@ return packer.startup(
         -- run python code in neovim
         use {
             "benlubas/molten-nvim",
-            after = {
-                "image.nvim"
-            },
             run = ":UpdateRemotePlugins",
             config = function()
-                vim.g.molten_image_provider = "image.nvim"
+                vim.g.molten_image_provider = "null"
                 vim.g.molten_virt_text_output = true
 
                 vim.keymap.set("n", "<leader>mi", ":MoltenInit<CR>")
@@ -495,6 +461,98 @@ return packer.startup(
             "MunifTanjim/nui.nvim"
         }
 
+        -- nvim-cmp
+        -- auto completion
+        use {
+            "hrsh7th/nvim-cmp",
+            requires = {
+                "hrsh7th/cmp-buffer",
+                "hrsh7th/cmp-cmdline",
+                "hrsh7th/cmp-nvim-lsp",
+                "hrsh7th/cmp-path",
+            },
+            after = {
+                "LuaSnip",
+            },
+            config = function()
+                local cmp = require("cmp")
+                local luasnip = require("luasnip")
+
+                require("luasnip.loaders.from_vscode").lazy_load()
+
+                cmp.setup({
+                    snippet = {
+                        expand = function(args)
+                            luasnip.lsp_expand(args.body)
+                        end,
+                    },
+                    mapping = {
+                        ["<C-b>"] = cmp.mapping.scroll_docs(-4),
+                        ["<C-f>"] = cmp.mapping.scroll_docs(4),
+                        ["<C-Space>"] = cmp.mapping.complete(),
+                        ["<C-e>"] = cmp.mapping.close(),
+                        ["<CR>"] = cmp.mapping.confirm({ select = true }),
+                        ["<Tab>"] = cmp.mapping(
+                            function(fallback)
+                                if cmp.visible() then
+                                    cmp.select_next_item()
+                                elseif luasnip.expand_or_jumpable() then
+                                    luasnip.expand_or_jump()
+                                else
+                                    fallback()
+                                end
+                            end,
+                            { "i", "s" }
+                        ),
+                        ['<S-Tab>'] = cmp.mapping(
+                            function(fallback)
+                                if cmp.visible() then
+                                    cmp.select_prev_item()
+                                elseif luasnip.jumpable(-1) then
+                                    luasnip.jump(-1)
+                                else
+                                    fallback()
+                                end
+                            end,
+                            { "i", "s" }
+                        ),
+                    },
+                    sources = cmp.config.sources(
+                        {
+                            {name = "nvim_lsp"},
+                            {name = "luasnip"},
+                        },
+                        {
+                            {name = "buffer"}
+                        }
+                    )
+                })
+
+                cmp.setup.cmdline(
+                    {"/", "?"},
+                    {
+                        sources = {
+                            {name = "buffer"}
+                        }
+                    }
+                )
+
+                cmp.setup.cmdline(
+                    ":",
+                    {
+                        sources = cmp.config.sources(
+                            {
+                                {name = "path"},
+                            },
+                            {
+                                {name = "cmdline"}
+                            }
+                        )
+                    }
+                )
+            end
+        }
+
         -- packer
         -- plugin manager that manages itself
         use {
@@ -503,7 +561,7 @@ return packer.startup(
 
         -- plenary
         -- library used by plugins
-        -- used by codecompanion, none ls, todo comments, telescope
+        -- used by avante, none ls, todo comments, telescope
         use {
             "nvim-lua/plenary.nvim"
         }
@@ -532,6 +590,19 @@ return packer.startup(
             end
         }
 
+        -- render markdown
+        -- render markdown file
+        -- used by avante
+        use {
+            "MeanderingProgrammer/render-markdown.nvim",
+            after = {
+                "nvim-treesitter"
+            },
+            config = function()
+                require("render-markdown").setup({})
+            end
+        }
+
         -- repeat
         -- fix something, not sure what but it is used by leap
         use {
@@ -553,6 +624,16 @@ return packer.startup(
                 vim.keymap.set("n", "<leader>fg", builtin.live_grep)
                 vim.keymap.set("n", "<leader>fr", builtin.lsp_references)
                 vim.keymap.set("n", "<leader>fs", builtin.lsp_document_symbols)
+            end
+        }
+
+        -- tiny inline diagnostic
+        -- better looking diagnostic messages
+        use {
+            "rachartier/tiny-inline-diagnostic.nvim",
+            config = function()
+                require("tiny-inline-diagnostic").setup()
+                vim.diagnostic.config({ virtual_text = false })
             end
         }
 
