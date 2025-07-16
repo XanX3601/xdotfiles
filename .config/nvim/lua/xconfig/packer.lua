@@ -609,6 +609,15 @@ return packer.startup(
             "tpope/vim-repeat"
         }
 
+        -- smear cursor
+        -- useless so mandatory
+        use {
+            "sphamba/smear-cursor.nvim",
+            config = function()
+                require("smear_cursor").setup({})
+            end
+        }
+
         -- telescope
         -- fuzzy finder
         use {
