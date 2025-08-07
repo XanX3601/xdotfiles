@@ -110,6 +110,48 @@ return packer.startup(
             end
         }
 
+        -- code companion
+        -- llm backup
+        use {
+            "olimorris/codecompanion.nvim",
+            config = function()
+                require("codecompanion").setup({
+                    adapters = {
+                        gpt_oss = function()
+                            return require("codecompanion.adapters").extend("ollama", {
+                                name = "gpt-oss",
+                                opts = {
+                                    stream = true
+                                },
+                                schema = {
+                                    model = {
+                                        default = "gpt-oss:latest"
+                                    },
+                                    think = {
+                                        default = true
+                                    },
+                                    keep_alive = {
+                                        default = "5m"
+                                    }
+                                }
+                            })
+                        end
+                    },
+                    strategies = {
+                        chat = {
+                            adapter = "gpt_oss"
+                        },
+                        inline = {
+                            adapter = "gpt_oss"
+                        },
+                        cmd = {
+                            adapter = "gpt_oss"
+                        }
+                    }
+                })
+            end
+        }
+
         -- colorizer
         -- show color for color string
         use {
@@ -569,7 +611,7 @@ return packer.startup(
 
         -- plenary
         -- library used by plugins
-        -- used by avante, none ls, todo comments, telescope
+        -- used by codecompanion, none ls, todo comments, telescope
         use {
             "nvim-lua/plenary.nvim"
         }
