@@ -61,6 +61,32 @@ return packer.startup(
             end,
         }
 
+        -- blink cmp
+        -- auto completion
+        use {
+            "saghen/blink.cmp",
+            after = {
+                "friendly-snippets"
+            },
+            tag = "v1.6.0",
+            config = function()
+                require("blink.cmp").setup({
+                    keymap = {
+                        preset = "enter",
+                        ["<Tab>"] = {"select_next", "snippet_forward", "fallback"},
+                        ["<S-Tab>"] = {"select_prev", "snippet_backward", "fallback"},
+                        ["<CR>"] = {"select_and_accept", "fallback"},
+                    },
+                    fuzzy = {
+                        implementation = "prefer_rust_with_warning"
+                    },
+                    sources = {
+                        default = {"lsp", "path", "buffer", "codecompanion"}
+                    }
+                })
+            end
+        }
+
         -- bufferline
         -- nice buffer line
         use {
@@ -114,38 +140,20 @@ return packer.startup(
         -- llm backup
         use {
             "olimorris/codecompanion.nvim",
+            after = {
+                "blink.cmp"
+            },
             config = function()
                 require("codecompanion").setup({
-                    adapters = {
-                        gpt_oss = function()
-                            return require("codecompanion.adapters").extend("ollama", {
-                                name = "gpt-oss",
-                                opts = {
-                                    stream = true
-                                },
-                                schema = {
-                                    model = {
-                                        default = "gpt-oss:latest"
-                                    },
-                                    think = {
-                                        default = true
-                                    },
-                                    keep_alive = {
-                                        default = "5m"
-                                    }
-                                }
-                            })
-                        end
-                    },
                     strategies = {
                         chat = {
-                            adapter = "gpt_oss"
-                        },
-                        inline = {
-                            adapter = "gpt_oss"
-                        },
-                        cmd = {
-                            adapter = "gpt_oss"
+                            opts = {
+                                completion_provider = "blink",
+                            },
+                            adapter = {
+                                name = "ollama",
+                                model = "deepseek-r1:8b"
+                            },
                         }
                     }
                 })
@@ -214,6 +222,38 @@ return packer.startup(
             end
         }
 
+        -- dashboard
+        -- just a fancy dashboard
+        -- useful ? nope
+        use {
+            "nvimdev/dashboard-nvim",
+            event = "VimEnter",
+            config = function()
+                local logo = [[
+                ⠀⠀⠀⠀⠀⠀⠀⣠⡤⠶⡄⠀⠀⠀⠀⠀⠀⠀⢠⠶⣦⣀⠀⠀⠀⠀⠀⠀⠀
+                ⠀⠀⠀⠀⢀⣴⣿⡟⠀⠈⣀⣾⣝⣯⣿⣛⣷⣦⡀⠀⠈⢿⣿⣦⡀⠀⠀⠀⠀
+                ⠀⠀⠀⣴⣿⣿⣿⡇⠀⢼⣿⣽⣿⢻⣿⣻⣿⣟⣷⡄⠀⢸⣿⣿⣾⣄⠀⠀⠀
+                ⠀⠀⣞⣿⣿⣿⣿⣷⣤⣸⣟⣿⣿⣻⣯⣿⣿⣿⣿⣀⣴⣿⣿⣿⣿⣯⣆⠀⠀
+                ⠀⡼⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣜⡆⠀
+                ⢠⣟⣯⣿⣿⣿⣷⢿⣫⣾⣿⣿⣿⣿⣿⣿⣿⣿⣿⣬⣟⠿⣿⣿⣿⣿⡷⣾⠀
+                ⢸⣯⣿⣿⡏⠙⡇⣾⣟⣿⡿⢿⣿⣿⣿⣿⣿⢿⣟⡿⣿⠀⡟⠉⢹⣿⣿⢿⡄
+                ⢸⣯⡿⢿⠀⠀⠱⢈⣿⢿⣿⡿⣏⣿⣿⣿⣿⣿⣿⣿⣿⣀⠃⠀⢸⡿⣿⣿⡇
+                ⢸⣿⣇⠈⢃⣴⠟⠛⢉⣸⣇⣹⣿⣿⠚⡿⣿⣉⣿⠃⠈⠙⢻⡄⠎⠀⣿⡷⠃
+                ⠈⡇⣿⠀⠀⠻⣤⠠⣿⠉⢻⡟⢷⣝⣷⠉⣿⢿⡻⣃⢀⢤⢀⡏⠀⢠⡏⡼⠀
+                ⠀⠘⠘⡅⠀⣔⠚⢀⣉⣻⡾⢡⡾⣻⣧⡾⢃⣈⣳⢧⡘⠤⠞⠁⠀⡼⠁⠀⠀
+                ⠀⠀⠀⠸⡀⠀⢠⡎⣝⠉⢰⠾⠿⢯⡘⢧⡧⠄⠀⡄⢻⠀⠀⠀⢰⠁⠀⠀⠀
+                ⠀⠀⠀⠀⠁⠀⠈⢧⣈⠀⠘⢦⠀⣀⠇⣼⠃⠰⣄⣡⠞⠀⠀⠀⠀⠀⠀⠀⠀
+                ⠀⠀⠀⠀⠀⠀⠀⠀⠀⠸⢤⠼⠁⠀⠀⠳⣤⡼⠀⠀⠀⠀⠀⠀
+                ]]
+                logo = string.rep("\n", 2) .. logo
+                require('dashboard').setup {
+                    config = {
+                        header = vim.split(logo, "\n"),
+                    }
+                }
+            end,
+        }
+
         -- dbee
         -- database interaction
         use {
@@ -249,28 +289,13 @@ return packer.startup(
             end
         }
 
-        -- evergarden
-        -- colorscheme to test
+        -- etldritch
+        -- colorscheme
         use {
-            "comfysage/evergarden",
-            config = function()
-                require("evergarden").setup({
-                    transparent_background = true,
-                    constrast_dark = "hard"
-                })
-            end
-        }
-
-        -- flow
-        -- colorscheme to test on transparent
-        use {
-            "0xstepit/flow.nvim",
-            config = function()
-                require("flow").setup({
-                    transparent = true,
-                    fluo_color = "pink",
-                    mode = "normal",
-                    aggressive_spell = false,
+            "eldritch-theme/eldritch.nvim",
+            config  = function()
+                require("eldritch").setup({
+                    transparent = true, -- Enable this to disable setting the background color
                 })
             end
         }
@@ -303,7 +328,11 @@ return packer.startup(
         use {
             "lukas-reineke/indent-blankline.nvim",
             config = function()
-                require("ibl").setup({})
+                require("ibl").setup({
+                    exclude = {
+                        filetypes = {"dashboard"}
+                    }
+                })
             end
         }
 
@@ -330,12 +359,6 @@ return packer.startup(
             end,
         }
 
-        -- lackluster
-        -- grey colorscheme I want to try
-        use {
-            "slugbyte/lackluster.nvim"
-        }
-
         -- leap
         -- jump arround the buffer using s and S
         use {
@@ -358,8 +381,11 @@ return packer.startup(
             config = function()
                 local lspconfig = require("lspconfig")
                 
-                capabilities = require('cmp_nvim_lsp').default_capabilities()
+                capabilities = require("blink.cmp").get_lsp_capabilities({})
 
+                lspconfig.clangd.setup({
+                    capabilities = capabilities,
+                })
                 lspconfig.pyright.setup({
                     capabilities = capabilities,
                     settings = {
@@ -402,7 +428,7 @@ return packer.startup(
                     }
                 })
 
-                vim.cmd [[colorscheme catppuccin]]
+                vim.cmd [[colorscheme eldritch]]
             end
         }
 
@@ -482,7 +508,7 @@ return packer.startup(
             config = function()
                 require("no-neck-pain").setup({
                     autocmds = {
-                        enableOnVimEnter = true,
+                        enableOnVimEnter = false,
                         reloadOnColorSchemeChange = false
                     },
                     buffers = {
@@ -511,95 +537,17 @@ return packer.startup(
             "MunifTanjim/nui.nvim"
         }
 
-        -- nvim-cmp
-        -- auto completion
+        -- oil
+        -- edit filesystem like a neovim buffer
         use {
-            "hrsh7th/nvim-cmp",
-            requires = {
-                "hrsh7th/cmp-buffer",
-                "hrsh7th/cmp-cmdline",
-                "hrsh7th/cmp-nvim-lsp",
-                "hrsh7th/cmp-path",
-            },
+            "stevearc/oil.nvim",
             after = {
-                "LuaSnip",
+                "nvim-web-devicons"
             },
             config = function()
-                local cmp = require("cmp")
-                local luasnip = require("luasnip")
-
-                require("luasnip.loaders.from_vscode").lazy_load()
-
-                cmp.setup({
-                    snippet = {
-                        expand = function(args)
-                            luasnip.lsp_expand(args.body)
-                        end,
-                    },
-                    mapping = {
-                        ["<C-b>"] = cmp.mapping.scroll_docs(-4),
-                        ["<C-f>"] = cmp.mapping.scroll_docs(4),
-                        ["<C-Space>"] = cmp.mapping.complete(),
-                        ["<C-e>"] = cmp.mapping.close(),
-                        ["<CR>"] = cmp.mapping.confirm({ select = true }),
-                        ["<Tab>"] = cmp.mapping(
-                            function(fallback)
-                                if cmp.visible() then
-                                    cmp.select_next_item()
-                                elseif luasnip.expand_or_jumpable() then
-                                    luasnip.expand_or_jump()
-                                else
-                                    fallback()
-                                end
-                            end,
-                            { "i", "s" }
-                        ),
-                        ['<S-Tab>'] = cmp.mapping(
-                            function(fallback)
-                                if cmp.visible() then
-                                    cmp.select_prev_item()
-                                elseif luasnip.jumpable(-1) then
-                                    luasnip.jump(-1)
-                                else
-                                    fallback()
-                                end
-                            end,
-                            { "i", "s" }
-                        ),
-                    },
-                    sources = cmp.config.sources(
-                        {
-                            {name = "nvim_lsp"},
-                            {name = "luasnip"},
-                        },
-                        {
-                            {name = "buffer"}
-                        }
-                    )
+                require("oil").setup({
+                    vim.keymap.set("n", "<leader>o", ":Oil --float<cr>")
                 })
-
-                cmp.setup.cmdline(
-                    {"/", "?"},
-                    {
-                        sources = {
-                            {name = "buffer"}
-                        }
-                    }
-                )
-
-                cmp.setup.cmdline(
-                    ":",
-                    {
-                        sources = cmp.config.sources(
-                            {
-                                {name = "path"},
-                            },
-                            {
-                                {name = "cmdline"}
-                            }
-                        )
-                    }
-                )
             end
         }
 
@@ -649,7 +597,15 @@ return packer.startup(
                 "nvim-treesitter"
             },
             config = function()
-                require("render-markdown").setup({})
+                require('render-markdown').setup({
+                    render_modes = {"n", "c", "i", "t"},
+                    completions = {
+                        blink = {
+                            enabled = true
+                        }
+                    },
+                    ft = {"md", "markdown", "codecompanion"}
+                })
             end
         }
 
@@ -750,18 +706,9 @@ return packer.startup(
             end
         }
 
-        -- vifm
-        -- vifm integration with neovim
-        use {
-            "vifm/vifm.vim",
-            config = function()
-                vim.keymap.set("n", "<leader>o", ":EditVifm<cr>")
-            end
-        }
-
         -- web devicons
         -- library used by plugins
-        -- used by bufferline, lualine, telescope
+        -- used by bufferline, dashboard, lualine, telescope
         use {
             "nvim-tree/nvim-web-devicons",
             config = function()
