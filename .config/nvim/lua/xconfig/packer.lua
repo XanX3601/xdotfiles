@@ -87,6 +87,15 @@ return packer.startup(
             end
         }
 
+        -- blink.indent
+        -- indent guide not based on treesitter, suppose to be faster
+        use {
+            "saghen/blink.indent",
+            config = function()
+                require("blink.indent").setup({})
+            end
+        }
+
         -- bufferline
         -- nice buffer line
         use {
@@ -117,10 +126,6 @@ return packer.startup(
                     flavour = "mocha",
                     transparent_background = true,
                     integrations = {
-                        indent_blankline = {
-                            enabled = true,
-                            colored_indent_levels = true
-                        }
                     },
                     leap = true,
                     mason = true,
@@ -152,7 +157,7 @@ return packer.startup(
                             },
                             adapter = {
                                 name = "ollama",
-                                model = "deepseek-r1:8b"
+                                model = "mistral:latest"
                             },
                         }
                     }
@@ -166,6 +171,17 @@ return packer.startup(
             "NvChad/nvim-colorizer.lua",
             config = function()
                 require("colorizer").setup({})
+            end
+        }
+
+        use {
+            "scottmckendry/cyberdream.nvim",
+            config = function()
+                require("cyberdream").setup({
+                    transparent = true,
+                    hide_fillchars = true,
+                    borderless_pickers = true,
+                })
             end
         }
 
@@ -265,8 +281,6 @@ return packer.startup(
                 "nui.nvim"
             },
             config = function()
-                require("dbee").setup({})
-
                 vim.keymap.set("n", "<leader>db", ":lua require('dbee').open()<cr>")
             end
         }
@@ -323,19 +337,6 @@ return packer.startup(
             end
         }
 
-        -- indent blankline
-        -- identation guide
-        use {
-            "lukas-reineke/indent-blankline.nvim",
-            config = function()
-                require("ibl").setup({
-                    exclude = {
-                        filetypes = {"dashboard"}
-                    }
-                })
-            end
-        }
-
         -- illuminate
         -- highligh current word
         use {
@@ -376,41 +377,70 @@ return packer.startup(
         use {
             "neovim/nvim-lspconfig",
             after = {
+                "blink.cmp",
                 "mason-lspconfig.nvim"
             },
             config = function()
+                -- lsp.lua (example)
                 local lspconfig = require("lspconfig")
-                
-                capabilities = require("blink.cmp").get_lsp_capabilities({})
+                local mason = require("mason")
+                local mason_lspconfig = require("mason-lspconfig")
 
-                lspconfig.clangd.setup({
-                    capabilities = capabilities,
+                mason.setup()
+                mason_lspconfig.setup({})
+
+                local on_attach = function(client, bufnr)
+                    local opts = { noremap=true, silent=true, buffer=bufnr }
+                    vim.keymap.set("n", "<leader>gD", vim.lsp.buf.declaration, opts)
+                    vim.keymap.set("n", "<leader>gd", vim.lsp.buf.definition, opts)
+                    vim.keymap.set("n", "<leader>gi", vim.lsp.buf.implementation, opts)
+                    vim.keymap.set("n", "<leader>K", vim.lsp.buf.hover, opts)
+                    vim.keymap.set("n", "[d", vim.diagnostic.goto_prev, opts)
+                    vim.keymap.set("n", "]d", vim.diagnostic.goto_next, opts)
+                    vim.keymap.set("n", '<leader>ca', vim.lsp.buf.code_action, opts)
+                end
+
+                local base_caps = vim.lsp.protocol.make_client_capabilities()
+                local blink_caps = require("blink.cmp").get_lsp_capabilities({})
+                local capabilities = vim.tbl_deep_extend(
+                    "force",
+                    base_caps,
+                    blink_caps
+                )
+
+                local server_settings = {
+                    pyright = {
+                        settings = {
+                            python = {
+                                analysis = {
+                                    autoSearchPaths = true,
+                                    typeCheckingMode = "basic",
+                                    diagnosticMode = "openFilesOnly",
+                                    useLibraryCodeForTypes = true,
+                                },
+                            },
+                        },
+                    },
+                }
+
+                local servers = {"ty", "ruff"}
+
+                mason_lspconfig.setup({
+                    ensure_installed = servers
                 })
-                lspconfig.pyright.setup({
-                    capabilities = capabilities,
-                    settings = {
-                        python = {
-                            analysis = {
-                                autoSearchPaths = true,
-                                typeCheckingMode = "basic",
-                                diagnosticMode = "openFilesOnly",
-                                useLibraryCodeForTypes = true,
-                            }
-                        }
+                for _, server_name in ipairs(servers) do
+                    local opts = {
+                        on_attach = on_attach,
+                        capabilities = capabilities,
                     }
-                })
-                lspconfig.ruff.setup({
-                    capabilities = capabilities,
-                })
 
-                local opts = {noremap=true, silent=true}
-                vim.keymap.set("n", "<leader>gD", vim.lsp.buf.declaration, opts)
-                vim.keymap.set("n", "<leader>gd", vim.lsp.buf.definition, opts)
-                vim.keymap.set("n", "<leader>gi", vim.lsp.buf.implementation, opts)
-                vim.keymap.set("n", "<leader>K", vim.lsp.buf.hover, opts)
-                vim.keymap.set("n", "[d", vim.diagnostic.goto_prev, opts)
-                vim.keymap.set("n", "]d", vim.diagnostic.goto_next, opts)
-                vim.keymap.set("n", '<leader>ca', vim.lsp.buf.code_action, opts)
+                    if server_settings[server_name] then
+                        opts = vim.tbl_deep_extend("force", opts, server_settings[server_name])
+                    end
+
+                    vim.lsp.config[server_name] = opts
+                    --require("lspconfig")[server_name].setup(opts)
+                end
             end
         }
 
@@ -419,12 +449,22 @@ return packer.startup(
         use {
             "nvim-lualine/lualine.nvim",
             after = {
-                "nvim-web-devicons"
+                "nvim-web-devicons",
+                "triforce.nvim"
             },
             config = function()
+                local triforce = require("triforce.lualine").components()
+
                 require("lualine").setup({
                     options = {
                         theme = "catppuccin"
+                    },
+                    sections = {
+                        lualine_x = {
+                            triforce.level,
+                            triforce.session_time,
+                            "encoding", "fileformat", "filetype"
+                        }
                     }
                 })
 
@@ -459,9 +499,7 @@ return packer.startup(
         -- to install lsp server, formatter, debugger, ...
         use {
             "williamboman/mason.nvim",
-            config = function()
-                require("mason").setup({})
-            end
+            -- config in lspconfig
         }
 
         -- mason lspconfig
@@ -471,9 +509,7 @@ return packer.startup(
             after = {
                 "mason.nvim"
             },
-            config = function()
-                require("mason-lspconfig").setup({})
-            end
+            -- config done in lsp config
         }
 
         -- molten
@@ -579,15 +615,6 @@ return packer.startup(
             "kevinhwang91/promise-async"
         }
 
-        -- rainbow delimiters
-        -- highlight delimiters with different colors based on treesitter
-        use {
-            "HiPhish/rainbow-delimiters.nvim",
-            config = function()
-                require("rainbow-delimiters.setup").setup({})
-            end
-        }
-
         -- render markdown
         -- render markdown file
         -- used by avante
@@ -642,6 +669,13 @@ return packer.startup(
             end
         }
 
+        use {
+            "rachartier/tiny-glimmer.nvim",
+            config = function()
+                require("tiny-glimmer").setup({})
+            end
+        }
+
         -- tiny inline diagnostic
         -- better looking diagnostic messages
         use {
@@ -661,6 +695,29 @@ return packer.startup(
             },
             config = function()
                 require("todo-comments").setup({})
+            end
+        }
+
+        -- toggle term
+        -- open a terminal inside neovim
+        use {
+            "akinsho/toggleterm.nvim",
+            config = function()
+                require("toggleterm").setup({
+                    hide_numbers = false,
+                    insert_mappings = false,
+                    direction = "float",
+                    persist_mode = false,
+                    float_opts = {
+                        border = "curved"
+                    }
+                })
+
+                vim.keymap.set("n", "<leader>tt", ":ToggleTerm<cr>")
+                vim.keymap.set("t", "<leader>tt", [[<c-\><c-n>:ToggleTerm<cr>]])
+
+                vim.keymap.set("t", "kj", [[<c-\><c-n>]])
+                vim.keymap.set("t", "kj", [[<c-\><c-n>]])
             end
         }
 
@@ -684,6 +741,22 @@ return packer.startup(
             end,
         }
 
+        -- triforce
+        -- gaming into neovim, may be better in the futur
+        use {
+            "gisketch/triforce.nvim",
+            after = {
+                "volt"
+            },
+            config = function()
+                require("triforce").setup({
+                    xp_rewards = {
+                        save = 0
+                    }
+                })
+            end
+        }
+
         -- ufo
         -- fold engine
         use {
@@ -704,6 +777,13 @@ return packer.startup(
                 vim.keymap.set('n', 'zr', require('ufo').openFoldsExceptKinds)
                 vim.keymap.set('n', 'zm', require('ufo').closeFoldsWith)
             end
+        }
+
+        -- volt
+        -- library to make user interface in neovim
+        -- used by triforce
+        use {
+            "nvzone/volt"
         }
 
         -- web devicons
