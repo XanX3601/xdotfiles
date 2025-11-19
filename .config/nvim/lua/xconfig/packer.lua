@@ -117,30 +117,6 @@ return packer.startup(
             end
         }
 
-        -- catppuccin
-        -- colorscheme
-        use {
-            "catppuccin/nvim",
-            config = function()
-                require("catppuccin").setup({
-                    flavour = "mocha",
-                    transparent_background = true,
-                    integrations = {
-                    },
-                    leap = true,
-                    mason = true,
-                    dap = true,
-                    dap_ui = true,
-                    native_lsp = {
-                        enabled = true
-                    },
-                    telescope = {
-                        enabled = true
-                    }
-                })
-            end
-        }
-
         -- code companion
         -- llm backup
         use {
