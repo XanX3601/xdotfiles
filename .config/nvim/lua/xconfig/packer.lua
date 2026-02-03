@@ -257,6 +257,8 @@ return packer.startup(
                 "nui.nvim"
             },
             config = function()
+                require("dbee").setup({})
+
                 vim.keymap.set("n", "<leader>db", ":lua require('dbee').open()<cr>")
             end
         }
@@ -370,11 +372,13 @@ return packer.startup(
         -- leap
         -- jump arround the buffer using s and S
         use {
-            "https://codeberg.org/andyg/leap.nvim",
+            "https://codeberg.org/andyg/leap.nvim.git",
             after = {
                 "vim-repeat"
             },
             config = function()
+                vim.keymap.set({'n', 'x', 'o'}, 's', '<Plug>(leap)')
+                vim.keymap.set('n',             'S', '<Plug>(leap-from-window)')
             end
         }
 
@@ -756,14 +760,6 @@ return packer.startup(
                 ts_update()
             end,
             config = function()
-                require("nvim-treesitter.configs").setup({
-                    highlight = {
-                        enable = true
-                    },
-                    indent = {
-                        enable = true
-                    }
-                })
             end,
         }
 
