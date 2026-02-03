@@ -313,6 +313,28 @@ return packer.startup(
             end
         }
 
+        -- haunt
+        -- annotate code
+        use {
+            "TheNoeTrevino/haunt.nvim",
+            config = function()
+                local haunt = require("haunt.api")
+                local haunt_picker = require("haunt.picker")
+                local map = vim.keymap.set
+                local prefix = "<leader>h"
+
+                map("n", prefix .. "a", function()
+                    haunt.annotate()
+                end, { desc = "Annotate" })
+                map("n", prefix .. "d", function()
+                    haunt.delete()
+                end, { desc = "Delete bookmark" })
+                map("n", prefix .. "l", function()
+                    haunt_picker.show()
+                end, { desc = "Show Picker" })
+            end
+        }
+
         -- illuminate
         -- highligh current word
         use {
@@ -336,15 +358,23 @@ return packer.startup(
             end,
         }
 
+        -- koda
+        -- colorscheme
+        use {
+            "https://github.com/oskarnurm/koda.nvim",
+            config = function()
+                require("koda").setup({ transparent = false })
+            end
+        }
+
         -- leap
         -- jump arround the buffer using s and S
         use {
-            "ggandor/leap.nvim",
+            "https://codeberg.org/andyg/leap.nvim",
             after = {
                 "vim-repeat"
             },
             config = function()
-                require("leap").add_default_mappings()
             end
         }
 
@@ -444,7 +474,7 @@ return packer.startup(
                     }
                 })
 
-                vim.cmd [[colorscheme eldritch]]
+                vim.cmd [[colorscheme koda]]
             end
         }
 
