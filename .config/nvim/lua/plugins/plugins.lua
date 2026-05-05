@@ -108,7 +108,7 @@ return {
                 transparent_background = false,
             })
 
-            vim.cmd.colorscheme "catppuccin-mocha"
+            -- vim.cmd.colorscheme "catppuccin-mocha"
         end
     },
 
@@ -177,6 +177,20 @@ return {
         end,
         config = function()
             require("dbee").setup()
+        end,
+    },
+
+    -- ember
+    -- colorscheme
+    {
+        "ember-theme/nvim",
+        name = "ember",
+        priority = 1000,
+        config = function()
+            require("ember").setup({
+                variant = "ember-soft", -- "ember" | "ember-soft" | "ember-light"
+            })
+            vim.cmd("colorscheme ember-soft")
         end,
     },
 
@@ -389,19 +403,19 @@ return {
             },
         },
         config = function()
-            vim.api.nvim_create_autocmd('FileType', {
-                pattern = { "python" },
-                callback = function() vim.treesitter.start() end,
-            })
-            vim.api.nvim_create_autocmd('FileType', {
-                pattern = { "sql" },
-                callback = function() vim.treesitter.start() end,
-            })
-            vim.api.nvim_create_autocmd('FileType', {
-                pattern = { "lua" },
-                callback = function() vim.treesitter.start() end,
-            })
-            vim.bo.indentexpr = "v:lua.require'nvim-treesitter'.indentexpr()"
+            local file_types = {"python", "sql", "lua", "rust"}
+
+            for index, file_type in pairs(file_types) do
+                vim.api.nvim_create_autocmd("FileType", {
+                    pattern = { file_type },
+                    callback = function()
+                        vim.treesitter.start()
+                        vim.wo[0][0].foldexpr = "v:lua.vim.treesitter.foldexpr()"
+                        vim.wo[0][0].foldmethod = "expr"
+                        vim.bo.indentexpr = "v:lua.require'nvim-treesitter'.indentexpr()"
+                    end
+                })
+            end
         end
     },
 
